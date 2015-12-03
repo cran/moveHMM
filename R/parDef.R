@@ -14,7 +14,8 @@
 #' number of parameters of the turning angle distribution}
 #' \item{bounds}{Matrix with 2 columns and \code{sum(parSize)} rows - each row contains the lower and upper
 #' bound for the correponding parameter)}
-#' \item{parNames}{Names of parameters}
+#' \item{parNames}{Names of parameters of step distribution (the names of the parameters of the
+#' angle distribution are always the same).}
 
 parDef <- function(stepDist,angleDist,nbStates,estAngleMean,zeroInflation)
 {
@@ -23,12 +24,12 @@ parDef <- function(stepDist,angleDist,nbStates,estAngleMean,zeroInflation)
   switch(stepDist,
          "gamma"={
            parSize[1] <- 2
-           stepBounds <- matrix(c(0,Inf),ncol=2,nrow=2*nbStates,byrow=TRUE)
+           stepBounds <- matrix(rep(c(0,Inf),2*nbStates),ncol=2,byrow=TRUE)
            parNames <- c("mean","sd")
          },
          "weibull"={
            parSize[1] <- 2
-           stepBounds <- matrix(c(0,Inf),ncol=2,nrow=2*nbStates,byrow=TRUE)
+           stepBounds <- matrix(rep(c(0,Inf),2*nbStates),ncol=2,byrow=TRUE)
            parNames <- c("shape","scale")
          },
          "lnorm"={
@@ -39,14 +40,14 @@ parDef <- function(stepDist,angleDist,nbStates,estAngleMean,zeroInflation)
          },
          "exp"={
            parSize[1] <- 1
-           stepBounds <- matrix(c(0,Inf),ncol=2,nrow=nbStates,byrow=TRUE)
+           stepBounds <- matrix(rep(c(0,Inf),nbStates),ncol=2,byrow=TRUE)
            parNames <- c("rate")
          })
 
   # include zero-mass
   if(zeroInflation) {
     parSize[1] <- parSize[1]+1
-    stepBounds <- rbind(stepBounds,matrix(c(0,1),ncol=2,nrow=nbStates,byrow=TRUE))
+    stepBounds <- rbind(stepBounds,matrix(rep(c(0,1),nbStates),ncol=2,byrow=TRUE))
     parNames <- c(parNames,"zero-mass")
   }
 
@@ -62,12 +63,10 @@ parDef <- function(stepDist,angleDist,nbStates,estAngleMean,zeroInflation)
              # (already in the right intervals for computing x and y)
              angleBounds <- matrix(c(rep(c(-Inf,Inf),nbStates),rep(c(-Inf,Inf),nbStates)),
                                    ncol=2,byrow=TRUE)
-             parNames <- c(parNames,"mean","concentration")
            }
            else {
              parSize[2] <- 1
-             angleBounds <- matrix(c(0,Inf),ncol=2,nrow=nbStates,byrow=TRUE)
-             parNames <- c(parNames,"concentration")
+             angleBounds <- matrix(rep(c(0,Inf),nbStates),ncol=2,byrow=TRUE)
            }
          },
          "wrpcauchy"={
@@ -77,12 +76,10 @@ parDef <- function(stepDist,angleDist,nbStates,estAngleMean,zeroInflation)
              # scaled from ]0,1[ to ]0,Inf[ (for computing x and y)
              angleBounds <- matrix(c(rep(c(-Inf,Inf),nbStates),rep(c(-Inf,1),nbStates)),
                                    ncol=2,byrow=TRUE)
-             parNames <- c(parNames,"location","concentration")
            }
            else {
              parSize[2] <- 1
-             angleBounds <- matrix(c(0,1),ncol=2,nrow=nbStates,byrow=TRUE)
-             parNames <- c(parNames,"concentration")
+             angleBounds <- matrix(rep(c(0,1),nbStates),ncol=2,byrow=TRUE)
            }
          })
 

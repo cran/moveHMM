@@ -11,7 +11,7 @@
 #'
 #' @details If some turning angles in the data are equal to pi, the corresponding pseudo-residuals
 #' will not be included. Indeed, given that the turning angles are defined on (-pi,pi], an angle of pi
-#' results in a pseudo-residual on +Inf (check Section 6.2 of reference for more information on the
+#' results in a pseudo-residual of +Inf (check Section 6.2 of reference for more information on the
 #' computation of pseudo-residuals).
 #'
 #' @examples
@@ -27,7 +27,6 @@
 #' Chapman & Hall (London).
 #'
 #' @export
-#'
 #' @importFrom stats integrate qnorm
 
 pseudoRes <- function(m)
@@ -35,9 +34,9 @@ pseudoRes <- function(m)
   if(!is.moveHMM(m))
     stop("'m' must be a moveHMM object (as output by fitHMM)")
 
-  stepFun <- paste("p",m$stepDist,sep="")
+  stepFun <- paste("p",m$conditions$stepDist,sep="")
 
-  angleDist <- m$angleDist
+  angleDist <- m$conditions$angleDist
   if(angleDist!="none") {
     angleFun <- paste("d",angleDist,sep="") # integrated below
 
@@ -80,7 +79,7 @@ pseudoRes <- function(m)
         zeromass <- m$mle$stepPar[nrow(m$mle$stepPar),state]
     }
 
-    if(m$stepDist=="gamma") {
+    if(m$conditions$stepDist=="gamma") {
       shape <- stepArgs[[2]]^2/stepArgs[[3]]^2
       scale <- stepArgs[[3]]^2/stepArgs[[2]]
       stepArgs[[2]] <- shape

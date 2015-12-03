@@ -101,7 +101,9 @@
 #' formula <- ~cov1+cos(cov2)
 #'
 #' m <- fitHMM(data=data,nbStates=nbStates,stepPar0=stepPar0,anglePar0=anglePar0,formula=formula,
-#'               stepDist=stepDist,angleDist=angleDist,angleMean=angleMean,verbose=2)
+#'               stepDist=stepDist,angleDist=angleDist,angleMean=angleMean)
+#'
+#' print(m)
 #'
 #' @references
 #' Patterson T.A., Basson M., Bravington M.V., Gunn J.S. 2009.
@@ -113,7 +115,6 @@
 #' Ecology, 93 (11), 2336-2342.
 #'
 #' @export
-#'
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats model.matrix nlm terms
 #' @import CircStats
@@ -316,6 +317,35 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   ####################
   ## Prepare output ##
   ####################
+  # include angle mean if it wasn't estimated
+  if(!is.null(angleMean) & angleDist!="none")
+    mle$anglePar <- rbind(angleMean,mle$anglePar)
+
+  # name columns and rows of MLEs
+  rownames(mle$stepPar) <- p$parNames[1:nrow(mle$stepPar)]
+  columns <- NULL
+  for(i in 1:nbStates)
+    columns[i] <- paste("state",i)
+  colnames(mle$stepPar) <- columns
+
+  if(angleDist!="none") {
+    rownames(mle$anglePar) <- c("mean","concentration")
+    colnames(mle$anglePar) <- columns
+  }
+
+  if(!is.null(mle$beta)) {
+    rownames(mle$beta) <- c("intercept",attr(terms(formula),"term.labels"))
+    columns <- NULL
+    for(i in 1:nbStates)
+      for(j in 1:nbStates) {
+        if(i<j)
+          columns[(i-1)*nbStates+j-i] <- paste(i,"->",j)
+        if(j<i)
+            columns[(i-1)*(nbStates-1)+j] <- paste(i,"->",j)
+      }
+    colnames(mle$beta) <- columns
+  }
+
   # compute stationary distribution
   if(stationary) {
     gamma <- trMatrix_rcpp(nbStates,mle$beta,covs)[,,1]
@@ -334,11 +364,6 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   if(nbStates==1)
     mle$delta <- 1
 
-  if(!is.null(angleMean) & angleDist!="none") {
-    mle$anglePar <- rbind(angleMean,mle$anglePar)
-    rownames(mle$anglePar) <- NULL # remove rbind row name
-  }
-
   # compute t.p.m. if no covariates
   if(nbCovs==0 & nbStates>1) {
     trMat <- trMatrix_rcpp(nbStates,mle$beta,covs)
@@ -346,10 +371,9 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   }
 
   # conditions of the fit
-  conditions <- list(zeroInflation=zeroInflation,estAngleMean=estAngleMean,stationary=stationary,
-                     formula=formula)
+  conditions <- list(stepDist=stepDist,angleDist=angleDist,zeroInflation=zeroInflation,
+                     estAngleMean=estAngleMean,stationary=stationary,formula=formula)
 
-  mh <- list(data=data,mle=mle,stepDist=stepDist,angleDist=angleDist,
-             mod=mod,conditions=conditions,rawCovs=rawCovs)
+  mh <- list(data=data,mle=mle,mod=mod,conditions=conditions,rawCovs=rawCovs)
   return(moveHMM(mh))
 }

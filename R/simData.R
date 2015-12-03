@@ -14,10 +14,9 @@
 #' @param anglePar Parameters of the turning angle distribution.
 #' @param beta Matrix of regression parameters for the transition probabilities (more information
 #' in "Details").
-#' @param covs Covariate values to include in the model, as a dataframe. The number of rows of \code{covs}
-#' needs to be a multiple of the number of animals, and the same number of observations will be
-#' simulated for each animal. Default: \code{NULL}. Covariates can also be simulated according to a standard
-#' normal distribution, by setting \code{covs} to \code{NULL}, and specifying \code{nbCovs>0}.
+#' @param covs Covariate values to include in the model, as a dataframe. Default: \code{NULL}.
+#' Covariates can also be simulated according to a standard normal distribution, by setting
+#' \code{covs} to \code{NULL}, and specifying \code{nbCovs>0}.
 #' @param nbCovs Number of covariates to simulate (0 by default). Does not need to be specified of
 #' \code{covs} is specified.
 #' @param zeroInflation \code{TRUE} if the step length distribution is inflated in zero.
@@ -26,8 +25,11 @@
 #' @param obsPerAnimal Either the number of the number of observations per animal (if single value),
 #' or the bounds of the number of observations per animal (if vector of two values). In the latter case,
 #' the numbers of obervations generated for each animal are uniformously picked from this interval.
-#' Default: \code{c(500,1500)}. \code{obsPerAnimal} does not need to be specified if \code{covs} is
-#' specified.
+#' Default: \code{c(500,1500)}.
+#' @param model A moveHMM object. This option can be used to simulate from a fitted model.  Default: NULL.
+#' Note that, if this argument is specified, most other arguments will be ignored -- except for nbAnimals,
+#' obsPerAnimal, covs (if covariate values different from those in the data should be specified),
+#' and states.
 #' @param states \code{TRUE} if the simulated states should be returned, \code{FALSE} otherwise (default).
 #'
 #' @return An object moveData, i.e. a dataframe of:
@@ -38,7 +40,8 @@
 #' \item{y}{Either norting or latitude}
 #' \item{...}{Covariates (if any)}
 #'
-#' @details The matrix \code{beta} of regression coefficients for the transition probabilities has
+#' @details \itemize{
+#' \item The matrix \code{beta} of regression coefficients for the transition probabilities has
 #' one row for the intercept, plus one row for each covariate, and one column for
 #' each non-diagonal element of the transition probability matrix. For example, in a 3-state
 #' HMM with 2 covariates, the matrix \code{beta} has three rows (intercept + two covariates)
@@ -46,12 +49,25 @@
 #' row-wise).
 #' In a covariate-free model (default), \code{beta} has one row, for the intercept.
 #'
+#' \item If the length of covariate values passed (either through 'covs', or 'model') is not the same
+#' as the number of observations suggested by 'nbAnimals' and 'obsPerAnimal', then the series of
+#' covariates is either shortened (removing last values - if too long) or extended (starting
+#' over from the first values - if too short).
+#' }
+#'
 #' @examples
+#' # 1. Pass a fitted model to simulate from
+#' # (m is a moveHMM object - as returned by fitHMM - automatically loaded with the package)
+#' # We keep the default nbAnimals=1.
+#' m <- example$m
+#' obsPerAnimal=c(50,100)
+#' data <- simData(model=m,obsPerAnimal=obsPerAnimal)
+#'
+#' # 2. Pass the parameters of the model to simulate from
 #' stepPar <- c(1,10,1,5,0.2,0.3) # mean1, mean2, sd1, sd2, z1, z2
 #' anglePar <- c(pi,0,0.5,2) # mean1, mean2, k1, k2
 #' stepDist <- "gamma"
 #' angleDist <- "vm"
-#' obsPerAnimal=c(50,100)
 #' data <- simData(nbAnimals=5,nbStates=2,stepDist=stepDist,angleDist=angleDist,stepPar=stepPar,
 #'                anglePar=anglePar,nbCovs=2,zeroInflation=TRUE,obsPerAnimal=obsPerAnimal)
 #'
@@ -69,8 +85,8 @@
 #'                nbCovs=2,zeroInflation=TRUE,obsPerAnimal=obsPerAnimal)
 #'
 #' # include covariates
-#' # (note that it is useless to specify "nbCovs" and "obsPerAnimal", which are respectively determined
-#' # by the number of columns and number of rows of "cov")
+#' # (note that it is useless to specify "nbCovs", which respectively determined
+#' # by the number of columns of "cov")
 #' cov <- data.frame(temp=rnorm(500,20,5))
 #' stepPar <- c(1,10,1,5) # mean1, mean2, sd1, sd2
 #' anglePar <- c(pi,0,0.5,2) # mean1, mean2, k1, k2
@@ -80,16 +96,48 @@
 #'                 anglePar=anglePar,covs=cov)
 #'
 #' @export
-#'
 #' @importFrom stats rnorm runif
 
-
-
-simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp"),
-                    angleDist=c("vm","wrpcauchy","none"),stepPar,anglePar=NULL,
+simData <- function(nbAnimals=1,nbStates=2,stepDist=c("gamma","weibull","lnorm","exp"),
+                    angleDist=c("vm","wrpcauchy","none"),stepPar=NULL,anglePar=NULL,
                     beta=NULL,covs=NULL,nbCovs=0,zeroInflation=FALSE,obsPerAnimal=c(500,1500),
-                    states=FALSE)
+                    model=NULL,states=FALSE)
 {
+  ##############################
+  ## Check if !is.null(model) ##
+  ##############################
+  if(!is.null(model)) {
+    # extract simulation parameters from model
+    nbStates <- ncol(model$mle$stepPar)
+    stepDist <- model$stepDist
+    angleDist <- model$angleDist
+    stepPar <- c(t(model$mle$stepPar))
+    anglePar <- c(t(model$mle$anglePar))
+    beta <- model$mle$beta
+
+    if(is.null(covs)) {
+      covsCol <- which(names(model$data)!="ID" & names(model$data)!="x" &
+                         names(model$data)!="y" & names(model$data)!="step" &
+                         names(model$data)!="angle")
+      covs <- model$data[,covsCol]
+
+      if(length(covsCol)>1) {
+        # remove intercept column, which is not expected in 'covs'
+        names <- colnames(covs)
+        covs <- data.frame(covs[,-1]) # data.frame structure is lost when only one column
+        colnames(covs) <- names[-1]
+      } else
+        covs <- NULL
+    }
+    # else, allow user to enter new values for covariates
+
+    zeroInflation <- model$conditions$zeroInflation
+
+  } else {
+    if(is.null(stepPar))
+      stop("'stepPar' needs to be specified")
+  }
+
   #####################
   ## Check arguments ##
   #####################
@@ -98,8 +146,11 @@ simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp
   angleDist <- match.arg(angleDist)
   angleFun <- paste("r",angleDist,sep="")
 
-  if(nbAnimals<1) stop("nbAnimals should be at least 1.")
-  if(nbStates<1) stop("nbStates should be at least 1.")
+  if(nbAnimals<1)
+    stop("nbAnimals should be at least 1.")
+  if(nbStates<1)
+    stop("nbStates should be at least 1.")
+
   p <- parDef(stepDist,angleDist,nbStates,TRUE,zeroInflation)
 
   if(length(stepPar)!=p$parSize[1]*nbStates | length(anglePar)!=p$parSize[2]*nbStates) {
@@ -146,14 +197,11 @@ simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp
   }
 
   if(!is.null(covs)) {
-    if(nrow(covs)%%nbAnimals!=0)
-      stop("The number of rows in covs should be a multiple of nbAnimals")
+    if(!is.data.frame(covs))
+      stop("'covs' should be a data.frame")
   }
 
   if(!is.null(covs)) {
-    # same number of observations for all animals
-    obsPerAnimal <- c(nrow(covs)/nbAnimals,nrow(covs)/nbAnimals)
-
     nbCovs <- ncol(covs)
 
     # account for missing values of the covariates
@@ -182,6 +230,25 @@ simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp
   #######################################
   ## Prepare parameters for simulation ##
   #######################################
+  # define number of observations for each animal
+  allNbObs <- rep(NA,nbAnimals)
+  for(zoo in 1:nbAnimals) {
+    if(obsPerAnimal[1]!=obsPerAnimal[2])
+      allNbObs[zoo] <- sample(obsPerAnimal[1]:obsPerAnimal[2],size=1)
+    else
+      allNbObs[zoo] <- obsPerAnimal[1]
+  }
+
+  # extend covs if not enough covariate values
+  if(!is.null(covs)) {
+    covnames <- colnames(covs)
+    while(sum(allNbObs)>nrow(covs))
+      covs <- rbind(covs,covs)
+    # shrink covs if too many covariate values
+    covs <- data.frame(covs[1:sum(allNbObs),])
+    colnames(covs) <- covnames
+  }
+
   # generate regression parameters for transition probabilities
   if(is.null(beta))
     beta <- matrix(rnorm(nbStates*(nbStates-1)*(nbCovs+1)),nrow=nbCovs+1)
@@ -224,10 +291,9 @@ simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp
   ## Loop over the animals ##
   ###########################
   for (zoo in 1:nbAnimals) {
-    if(obsPerAnimal[1]!=obsPerAnimal[2])
-      nbObs <- sample(obsPerAnimal[1]:obsPerAnimal[2],1)
-    else
-      nbObs <- obsPerAnimal[1]
+
+    # number of observations for animal zoo
+    nbObs <- allNbObs[zoo]
 
     ###############################
     ## Simulate covariate values ##
@@ -244,7 +310,12 @@ simData <- function(nbAnimals,nbStates,stepDist=c("gamma","weibull","lnorm","exp
         }
       } else {
         # select covariate values which concern the current animal
-        subCovs <- data.frame(covs[((zoo-1)*obsPerAnimal[1]+1):(zoo*obsPerAnimal[1]),])
+        if(zoo<2)
+          ind1 <- 1
+        else
+          ind1 <- sum(allNbObs[1:(zoo-1)])+1
+        ind2 <- sum(allNbObs[1:zoo])
+        subCovs <- data.frame(covs[ind1:ind2,])
         if(!is.null(covs))
           colnames(subCovs) <- colnames(covs) # keep covariates names from input
       }

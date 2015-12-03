@@ -14,7 +14,6 @@
 #' summary(data)
 #'
 #' @export
-#'
 #' @importFrom stats quantile
 
 summary.moveData <- function(object,details=TRUE,...)
@@ -26,7 +25,7 @@ summary.moveData <- function(object,details=TRUE,...)
   if(nbAnimals==1)
     cat("Movement data for 1 animal:\n",sep="")
   else
-    cat("Movement data for ",nbAnimals," animals:\n",sep="")
+    cat("Movement data for ",nbAnimals," tracks:\n",sep="")
   for(zoo in 1:nbAnimals)
     cat(as.character(unique(data$ID)[zoo])," -- ",
         length(which(data$ID==unique(data$ID)[zoo]))," observations\n",sep="")
@@ -43,7 +42,7 @@ summary.moveData <- function(object,details=TRUE,...)
         for(i in 1:(length(covsCol)-1))
           cat(names(data)[covsCol[i]],", ",sep="")
       }
-      cat(names(data)[covsCol[length(covsCol)]])
+      cat(names(data)[covsCol[length(covsCol)]],"\n")
     } else {
       # print names and quantiles of the covariates
       for(i in 1:length(covsCol)) {

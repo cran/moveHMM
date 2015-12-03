@@ -17,6 +17,7 @@
 #' Default: \code{FALSE}.
 #' @param sepStates If \code{TRUE}, the data is split by states in the histograms.
 #' Default: \code{FALSE}.
+#' @param col Vector or colors for the states (one color per state).
 #' @param ... Currently unused. For compatibility with generic method.
 #'
 #' @details The state-dependent densities are weighted by the frequency of each state in the most
@@ -33,22 +34,29 @@
 #'
 #'
 #' @export
-#'
 #' @importFrom graphics legend lines segments
 
 plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL,sepAnimals=FALSE,
-                         sepStates=FALSE,...)
+                         sepStates=FALSE,col=NULL,...)
 {
   m <- x # the name "x" is for compatibility with the generic method
   nbAnimals <- length(unique(m$data$ID))
   nbStates <- ncol(m$mle$stepPar)
 
-  stepFun <- paste("d",m$stepDist,sep="")
-  if(m$angleDist!="none")
-    angleFun <- paste("d",m$angleDist,sep="")
+  stepFun <- paste("d",m$conditions$stepDist,sep="")
+  if(m$conditions$angleDist!="none")
+    angleFun <- paste("d",m$conditions$angleDist,sep="")
 
   if(!is.null(hist.ylim) & length(hist.ylim)!=2)
     stop("hist.ylim needs to be a vector of two values (ymin,ymax)")
+
+  # prepare colors for the states (used in the maps and for the densities)
+  if(!is.null(col) & length(col)!=nbStates) {
+    warning("Length of 'col' should be equal to number of states - argument ignored")
+    col <- 2:(nbStates+1)
+  }
+  if(is.null(col))
+    col <- 2:(nbStates+1)
 
   ######################
   ## Prepare the data ##
@@ -93,7 +101,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
     angleData <- m$data$angle[ind]
   }
 
-  if(m$angleDist=="none")
+  if(m$conditions$angleDist=="none")
     angleData <- NULL
 
   x <- list()
@@ -141,7 +149,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
       stepArgs[[j+1]] <- m$mle$stepPar[j,state]
 
     # conversion between mean/sd and shape/scale if necessary
-    if(m$stepDist=="gamma") {
+    if(m$conditions$stepDist=="gamma") {
       shape <- stepArgs[[2]]^2/stepArgs[[3]]^2
       scale <- stepArgs[[3]]^2/stepArgs[[2]]
       stepArgs[[2]] <- shape
@@ -154,7 +162,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
       stepDensities[[state]] <- cbind(grid,w[state]*do.call(stepFun,stepArgs))
   }
 
-  if(m$angleDist!="none") {
+  if(m$conditions$angleDist!="none") {
     angleDensities <- list()
     grid <- seq(-pi,pi,length=1000)
 
@@ -193,7 +201,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
           message <- paste("Animal ID:",ID[zoo]," - State:",state)
 
           # the function plotHist is defined below
-          plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,state,hist.ylim)
+          plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,state,hist.ylim,col)
         }
 
       } else { # if !sepStates
@@ -201,7 +209,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
         angle <- angleData[[zoo]]
         message <- paste("Animal ID:",ID[zoo])
 
-        plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,NULL,hist.ylim)
+        plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,NULL,hist.ylim,col)
       }
     }
   } else { # if !sepAnimals
@@ -213,7 +221,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
         angle <- angleData[which(states==state)]
         message <- paste("All animals - State:",state)
 
-        plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,state,hist.ylim)
+        plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,state,hist.ylim,col)
       }
 
     } else { # if !sepStates
@@ -221,7 +229,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
       angle <- angleData
       message <- "All animals"
 
-      plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,NULL,hist.ylim)
+      plotHist(step,angle,stepDensities,angleDensities,message,sepStates,breaks,NULL,hist.ylim,col)
     }
   }
 
@@ -306,13 +314,13 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
 
       # first point
       plot(x[[zoo]][1],y[[zoo]][1],xlim=c(xmin,xmax),ylim=c(ymin,ymax),pch=18,
-           xlab="x",ylab="y",col=subStates[1]+1)
+           xlab="x",ylab="y",col=col[subStates[1]])
 
       # trajectory
       for(i in 2:length(x[[zoo]])) {
-        points(x[[zoo]][i],y[[zoo]][i],pch=16,col=subStates[i-1]+1,cex=0.6)
+        points(x[[zoo]][i],y[[zoo]][i],pch=16,col=col[subStates[i-1]],cex=0.6)
         segments(x0=x[[zoo]][i-1],y0=y[[zoo]][i-1],x1=x[[zoo]][i],y1=y[[zoo]][i],
-                 col=subStates[i-1]+1,lwd=1.3)
+                 col=col[subStates[i-1]],lwd=1.3)
       }
       mtext(paste("Animal ID:",ID[zoo]),side=3,outer=TRUE,padj=2)
     }
@@ -340,9 +348,10 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
 #  - message: message to print above the histograms
 #  - sepStates, breaks, hist.ylim: see arguments of plot.moveHMM.
 #  - state: if sepStates, this function needs to know which state needs to be plotted.
+#  - col: colors of the state-dependent density lines
 
 plotHist <- function (step,angle=NULL,stepDensities,angleDensities=NULL,message,
-                      sepStates,breaks="Sturges",state=NULL,hist.ylim=NULL)
+                      sepStates,breaks="Sturges",state=NULL,hist.ylim=NULL,col=NULL)
 {
   # vertical limits
   if(!is.null(hist.ylim)) {
@@ -394,12 +403,12 @@ plotHist <- function (step,angle=NULL,stepDensities,angleDensities=NULL,message,
 
   # plot step density over the histogram
   if(sepStates)
-    lines(stepDensities[[state]],col=state+1,lwd=2)
+    lines(stepDensities[[state]],col=col[state],lwd=2)
   else {
     for(s in 1:nbStates)
-      lines(stepDensities[[s]],col=s+1,lwd=2)
+      lines(stepDensities[[s]],col=col[s],lwd=2)
 
-    legend("top",legText,lwd=rep(2,nbStates),col=c(2:(nbStates+1)),bty="n")
+    legend("top",legText,lwd=rep(2,nbStates),col=col,bty="n")
   }
 
   if(!is.null(angle))  {
@@ -419,12 +428,12 @@ plotHist <- function (step,angle=NULL,stepDensities,angleDensities=NULL,message,
 
     # plot angle density over the histogram
     if(sepStates)
-      lines(angleDensities[[state]],col=state+1,lwd=2)
+      lines(angleDensities[[state]],col=col[state],lwd=2)
     else {
       for(s in 1:nbStates)
-        lines(angleDensities[[s]],col=s+1,lwd=2)
+        lines(angleDensities[[s]],col=col[s],lwd=2)
 
-      legend("top",legText,lwd=rep(2,nbStates),col=c(2:(nbStates+1)),bty="n")
+      legend("top",legText,lwd=rep(2,nbStates),col=col,bty="n")
     }
   }
 }

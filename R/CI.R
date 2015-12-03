@@ -21,7 +21,6 @@
 #' CI(m)
 #'
 #' @export
-#'
 #' @importFrom MASS ginv
 
 CI <- function(m,alpha=0.95,nbSims=10^6)
@@ -46,7 +45,8 @@ CI <- function(m,alpha=0.95,nbSims=10^6)
   Sigma <- ginv(m$mod$hessian)
   var <- diag(Sigma)
 
-  p <- parDef(m$stepDist,m$angleDist,nbStates,m$conditions$estAngleMean,m$conditions$zeroInflation)
+  p <- parDef(m$conditions$stepDist,m$conditions$angleDist,nbStates,m$conditions$estAngleMean,
+              m$conditions$zeroInflation)
 
   # check if some parameters are close to their bounds
   check <- FALSE
@@ -59,7 +59,7 @@ CI <- function(m,alpha=0.95,nbSims=10^6)
   if(length(which(round(abs(stepPar-stepBounds[,2]),5)==0))>0)
     check <- TRUE
 
-  if(m$angleDist!="none") {
+  if(m$conditions$angleDist!="none") {
     angleBounds <- p$bounds[(p$parSize[1]*nbStates+1):nrow(p$bounds),]
     anglePar <- as.vector(t(m$mle$anglePar))
     # are angle parameters close to their lower bounds?
@@ -133,6 +133,24 @@ CI <- function(m,alpha=0.95,nbSims=10^6)
   # group CIs for step parameters and t.p. coefficients
   stepPar <- list(lower=lower$stepPar,upper=upper$stepPar)
   beta <- list(lower=lower$beta,upper=upper$beta)
+
+  # name the rows and columns of the CIs
+  rownames(stepPar$lower) <- rownames(m$mle$stepPar)
+  rownames(stepPar$upper) <- rownames(m$mle$stepPar)
+  colnames(stepPar$lower) <- colnames(m$mle$stepPar)
+  colnames(stepPar$upper) <- colnames(m$mle$stepPar)
+  if(m$conditions$angleDist!="none") {
+    rownames(anglePar$lower) <- rownames(m$mle$anglePar)
+    rownames(anglePar$upper) <- rownames(m$mle$anglePar)
+    colnames(anglePar$lower) <- colnames(m$mle$anglePar)
+    colnames(anglePar$upper) <- colnames(m$mle$anglePar)
+  }
+  if(!is.null(m$mle$beta)) {
+    rownames(beta$lower) <- rownames(m$mle$beta)
+    rownames(beta$upper) <- rownames(m$mle$beta)
+    colnames(beta$lower) <- colnames(m$mle$beta)
+    colnames(beta$upper) <- colnames(m$mle$beta)
+  }
 
   if(!is.null(m$mle$beta))
     return(list(stepPar=stepPar,anglePar=anglePar,beta=beta))
