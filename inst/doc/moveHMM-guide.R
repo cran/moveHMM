@@ -1,4 +1,4 @@
-## ----init,echo=FALSE-----------------------------------------------------
+## ----init, echo=FALSE, message=FALSE-------------------------------------
 library(MASS)
 library(boot)
 library(CircStats)
@@ -157,6 +157,17 @@ AIC(m,m3)
 #  # time series, qq-plots, and ACF of the pseudo-residuals
 #  plotPR(m)
 
-## ----plotPR, fig.width='4in', fig.height='5in', out.width='4in', out.height='5in', fig.pos='ht', fig.align='center', fig.cap="Time series, qq-plots, and autocorrelation functions of the pseudo-residuals of the 2-state model.", cache=TRUE, echo=FALSE, results='hide', message=FALSE----
+## ----plotPR, fig.width='4in', fig.height='5in', out.width='4in', out.height='5in', fig.pos='ht!', fig.align='center', fig.cap="Time series, qq-plots, and autocorrelation functions of the pseudo-residuals of the 2-state model.", cache=TRUE, echo=FALSE, results='hide', message=FALSE----
 plotPR(m)
+
+## ----plotSat1, size='small', eval=FALSE----------------------------------
+#  library(rgdal)
+#  utmcoord <- SpatialPoints(cbind(data$x*1000,data$y*1000),
+#                            proj4string=CRS("+proj=utm +zone=17"))
+#  llcoord <- spTransform(utmcoord,CRS("+proj=longlat"))
+#  lldata <- data.frame(ID=data$ID,x=attr(llcoord,"coords")[,1],
+#                       y=attr(llcoord,"coords")[,2])
+
+## ----plotSat2, eval=FALSE------------------------------------------------
+#  plotSat(lldata,zoom=8)
 

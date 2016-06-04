@@ -8,7 +8,7 @@
 #'
 #' @param x Object \code{moveHMM}
 #' @param animals Vector of indices or IDs of animals for which information will be plotted.
-#' Default: \code{NULL} ; all animals are plotted.
+#' Default: \code{NULL}; all animals are plotted.
 #' @param ask If \code{TRUE}, the execution pauses between each plot.
 #' @param breaks Histogram parameter. See \code{hist} documentation.
 #' @param hist.ylim Parameter \code{ylim} for the step length histograms.
@@ -55,8 +55,14 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
     warning("Length of 'col' should be equal to number of states - argument ignored")
     col <- 2:(nbStates+1)
   }
-  if(is.null(col))
-    col <- 2:(nbStates+1)
+  if(is.null(col) & nbStates<8) {
+    # color-blind friendly palette
+    pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+    col <- pal[1:nbStates]
+  }
+  if(is.null(col) & nbStates>=8)
+    col <- rainbow(nbStates) # to make sure that all colors are distinct (but, really? eight states?)
+
 
   ######################
   ## Prepare the data ##
@@ -133,7 +139,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
 
   if(m$conditions$zeroInflation) {
     zeromass <- m$mle$stepPar[nrow(m$mle$stepPar),]
-    m$mle$stepPar <- m$mle$stepPar[-nrow(m$mle$stepPar),]
+    m$mle$stepPar <- as.matrix(m$mle$stepPar[-nrow(m$mle$stepPar),])
   }
 
   ###########################################

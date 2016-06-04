@@ -32,6 +32,10 @@
 #' Default: \code{NULL} (the angle mean is estimated).
 #' @param stationary \code{FALSE} if there are covariates. If \code{TRUE}, the initial distribution is considered
 #' equal to the stationary distribution. Default: \code{FALSE}.
+#' @param knownStates Vector of values of the state process which are known prior to fitting the
+#' model (if any). Default: NULL (states are not known). This should be a vector with length the number
+#' of rows of 'data'; each element should either be an integer (the value of the known states) or NA if
+#' the state is not known.
 #' @param verbose Determines the print level of the optimizer. The default value of 0 means that no
 #' printing occurs, a value of 1 means that the first and last iterations of the optimization are
 #' detailed, and a value of 2 means that each iteration of the optimization is detailed.
@@ -55,6 +59,8 @@
 #' \item{conditions}{A few conditions used to fit the model (\code{zeroInflation}, \code{estAngleMean},
 #' \code{stationary}, and \code{formula})}
 #' \item{rawCovs}{Raw covariate values, as found in the data (if any). Used in \code{\link{plot.moveHMM}}.}
+#' \item{knownStates}{Vector of states known a priori, as provided in input (if any, \code{NULL} otherwise).
+#' Used in \code{\link{viterbi}},\code{\link{logAlpha}}, and \code{\link{logBeta}}}.
 #'
 #' @details
 #' \itemize{
@@ -123,7 +129,7 @@
 
 fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formula=~1,
                    stepDist=c("gamma","weibull","lnorm","exp"),angleDist=c("vm","wrpcauchy","none"),
-                   angleMean=NULL,stationary=FALSE,verbose=0,nlmPar=NULL,fit=TRUE)
+                   angleMean=NULL,stationary=FALSE,knownStates=NULL,verbose=0,nlmPar=NULL,fit=TRUE)
 {
   # check that the data is a moveData object
   if(!is.moveData(data))
@@ -214,6 +220,8 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
       stop(paste("delta0 has the wrong length: it should have",nbStates,"elements."))
 
   stepBounds <- bounds[1:(parSize[1]*nbStates),]
+  if(!is.matrix(stepBounds)) # if collapsed
+    stepBounds <- matrix(stepBounds,ncol=2)
   if(length(which(stepPar0<=stepBounds[,1] | stepPar0>=stepBounds[,2]))>0)
     stop(paste("Check the step parameters bounds (the initial parameters should be",
                "strictly between the bounds of their parameter space)."))
@@ -241,7 +249,6 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   else if(!is.null(angleMean))
     stop("'angleMean' shouldn't be specified if 'angleDist' is \"none\"")
 
-
   # check that verbose is in {0,1,2}
   if(!(verbose %in% c(0,1,2)))
     stop("verbose must be in {0,1,2}")
@@ -255,6 +262,15 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   # check that stationary==FALSE if there are covariates
   if(nbCovs>0 & stationary==TRUE)
     stop("stationary can't be set to TRUE if there are covariates.")
+
+  # check that knownStates is defined properly
+  if(length(knownStates)>0) {
+    if(length(knownStates)!=nrow(data))
+      stop("'states' should be of same length as the data, i.e.",nrow(data))
+
+    if(max(knownStates,na.rm=TRUE)>nbStates | min(knownStates,na.rm=TRUE)<1)
+      stop("'states' should only contain integers between 1 and",nbStates,", and NAs.")
+  }
 
   # check elements of nlmPar
   lsPars <- c("gradtol","stepmax","steptol","iterlim")
@@ -300,7 +316,7 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
 
     # call to optimizer nlm
     withCallingHandlers(mod <- nlm(nLogLike,wpar,nbStates,bounds,parSize,data,stepDist,
-                                   angleDist,angleMean,zeroInflation,stationary,
+                                   angleDist,angleMean,zeroInflation,stationary,knownStates,
                                    print.level=verbose,gradtol=gradtol,
                                    stepmax=stepmax,steptol=steptol,
                                    iterlim=iterlim,hessian=TRUE),
@@ -374,6 +390,6 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0,beta0=NULL,delta0=NULL,formu
   conditions <- list(stepDist=stepDist,angleDist=angleDist,zeroInflation=zeroInflation,
                      estAngleMean=estAngleMean,stationary=stationary,formula=formula)
 
-  mh <- list(data=data,mle=mle,mod=mod,conditions=conditions,rawCovs=rawCovs)
+  mh <- list(data=data,mle=mle,mod=mod,conditions=conditions,rawCovs=rawCovs,knownStates=knownStates)
   return(moveHMM(mh))
 }
