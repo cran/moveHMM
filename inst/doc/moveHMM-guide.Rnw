@@ -12,6 +12,7 @@
 \usepackage{color} % for lstlisting background color
 \usepackage{booktabs} % pretty tables
 \usepackage{url}
+\usepackage[margin=3cm]{geometry}
 
 % listing style
 \definecolor{lightgrey}{rgb}{0.95,0.95,0.95}
@@ -46,6 +47,8 @@ library(sp)
 library(Rcpp)
 library(moveHMM)
 @
+
+\tableofcontents
 
 \section{Introduction}
 
@@ -98,7 +101,7 @@ It is possible to have a column ``ID'', which contains the identifiers of the ob
 
 The elk data considered in \cite{morales2004} are available online at:
 \begin{center}
-  \url{http://www.esapubs.org/archive/ecol/E085/072/elk\_data.txt}
+  \url{http://www.esapubs.org/archive/ecol/E085/072/elk_data.txt}
 \end{center}
 We load the relevant rows and columns into a data frame using the \texttt{read.table} command.
 
@@ -344,7 +347,7 @@ Figure \ref{moveHMM} displays those plots, but showing only one of the plotted m
   \label{moveHMM}
 \end{figure}
 
-The first state (in red on the plots) corresponds to short steps, and angles centered around $\pi$, and the second state (in green on the plots) corresponds to longer steps, and angles centered around $0$.
+The first state (in orange on the plots) corresponds to short steps, and angles centered around $\pi$, and the second state (in blue on the plots) corresponds to longer steps, and angles centered around $0$.
 
 The plots of the transition probabilities as function of the covariate indicate that animals tend to switch from the second state to the first state when they are far from water, whereas they stay in the second state when closer to water.
 
@@ -446,6 +449,11 @@ plotSat(lldata,zoom=8)
 	\caption{Plot of the elk data, obtained with plotSat.}
 	\label{fig:plotSat}
 \end{figure}
+
+\subsection{Dealing with one-dimensional data}
+It is sometimes of interest to model one-dimensional movement data, like e.g. dive data. This can be done in moveHMM by setting all values of the second coordinate to zero in the data, and use the option \texttt{angleDist="none"}.
+
+In the case where one-dimensional data are provided, the plotting functions for the data and for the model will output plots of the first coordinate as a function of time, instead of a map of the track.
 
 \section{Package features}
 In this section, we describe the global structure of the package, and then describe in more detail the main functions required to fit an HMM to movement data.

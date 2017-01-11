@@ -1,15 +1,15 @@
 
 
-# moveHMM [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/moveHMM)](http://cran.r-project.org/package=moveHMM) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Downloads](http://cranlogs.r-pkg.org/badges/moveHMM)](https://cran.r-project.org/package=moveHMM)
+# moveHMM [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/moveHMM)](https://cran.r-project.org/package=moveHMM) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Downloads](http://cranlogs.r-pkg.org/badges/moveHMM)](https://cran.r-project.org/package=moveHMM)
 
 An R package for modelling animal movement with hidden Markov models.
 
-Get started with the vignette: [Guide to using moveHMM](https://cran.r-project.org/web/packages/moveHMM/vignettes/moveHMM-guide.pdf)
+Get started with the vignette: [Guide to using moveHMM](https://CRAN.R-project.org/package=moveHMM/vignettes/moveHMM-guide.pdf)
 
 ## Installation instructions
 
 ### Stable release
-The package is available on [CRAN](https://cran.r-project.org/package=moveHMM). To install it from CRAN, you can use the following commands:
+The package is available on [CRAN](https://CRAN.R-project.org/package=moveHMM). To install it from CRAN, you can use the following commands:
 ``` R
 # install dependencies
 install.packages(c("Rcpp","RcppArmadillo","sp","CircStats"))
