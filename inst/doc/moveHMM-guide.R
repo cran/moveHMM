@@ -6,27 +6,18 @@ library(sp)
 library(Rcpp)
 library(moveHMM)
 
-## ----trackData1,size='small'---------------------------------------------
-trackData <- read.table(
-    "http://www.esapubs.org/archive/ecol/E085/072/elk_data.txt",
-    sep="\t",header=TRUE)[1:735,c(1,2,3,7)]
-
 ## ----trackData2,size='small'---------------------------------------------
-head(trackData)
-
-## ----trackData3,size='small'---------------------------------------------
-colnames(trackData)[1] <- "ID"
-colnames(trackData)[4] <- "dist_water"
+head(elk_data)
 
 ## ----trackData4,size='small'---------------------------------------------
-trackData$Easting <- trackData$Easting/1000
-trackData$Northing <- trackData$Northing/1000
+elk_data$Easting <- elk_data$Easting/1000
+elk_data$Northing <- elk_data$Northing/1000
 
 ## ----trackData5,size='small'---------------------------------------------
-head(trackData)
+head(elk_data)
 
 ## ----prepData,size='small'-----------------------------------------------
-data <- prepData(trackData,type="UTM",coordNames=c("Easting","Northing"))
+data <- prepData(elk_data,type="UTM",coordNames=c("Easting","Northing"))
 
 ## ----data,size='small'---------------------------------------------------
 head(data)
@@ -131,7 +122,7 @@ head(sp)
 #  plotStates(m,animals="elk-115")
 
 ## ----plotStates2, fig.width='4in', fig.height='4in', out.width='4in', out.height='4in', fig.pos='ht', fig.align='center', fig.cap="Decoded states sequence (top row), and state probabilities of observations (middle and bottom rows) for elk-115", cache=TRUE, echo=FALSE, results='hide'----
-plotStates(m,animals="elk-115")
+plotStates(m,animals="elk-115",ask=FALSE)
 
 ## ----AIC,size='small',eval=FALSE-----------------------------------------
 #  # initial parameters
