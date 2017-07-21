@@ -62,8 +62,12 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
         pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
         col <- pal[1:nbStates]
     }
-    if(is.null(col) & nbStates>=8)
-        col <- rainbow(nbStates) # to make sure that all colors are distinct (but, really? eight states?)
+    if(is.null(col) & nbStates>=8) {
+        # to make sure that all colours are distinct (emulate ggplot default palette)
+        hues <- seq(15, 375, length = nbStates + 1)
+        col <- hcl(h = hues, l = 65, c = 100)[1:nbStates]
+    }
+
 
     if(sepStates | nbStates<2)
         cumul <- FALSE
@@ -316,7 +320,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
 
             if(!all(y[[zoo]]==0)) { # if 2D data
 
-                plot(x[[zoo]],y[[zoo]],pch=16,col=col[subStates],cex=0.6,asp=1,
+                plot(x[[zoo]],y[[zoo]],pch=16,col=col[subStates],cex=0.5,asp=1,
                      xlab="x",ylab="y")
                 segments(x0=x[[zoo]][-length(x[[zoo]])], y0=y[[zoo]][-length(y[[zoo]])],
                          x1=x[[zoo]][-1], y1=y[[zoo]][-1],
@@ -333,7 +337,7 @@ plot.moveHMM <- function(x,animals=NULL,ask=TRUE,breaks="Sturges",hist.ylim=NULL
 
                 # trajectory
                 for(i in 2:length(x[[zoo]])) {
-                    points(i,x[[zoo]][i],pch=16,col=col[subStates[i-1]],cex=0.6)
+                    points(i,x[[zoo]][i],pch=16,col=col[subStates[i-1]],cex=0.5)
                     segments(x0=i-1,y0=x[[zoo]][i-1],x1=i,y1=x[[zoo]][i],
                              col=col[subStates[i-1]],lwd=1.3)
                 }

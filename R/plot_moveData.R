@@ -18,8 +18,8 @@
 #' plot(data,compact=TRUE,breaks=20,ask=FALSE)
 #'
 #' @export
-#' @importFrom grDevices rainbow
 #' @importFrom graphics abline axis hist mtext par plot points
+#' @importFrom grDevices hcl
 
 plot.moveData <- function(x,animals=NULL,compact=FALSE,ask=TRUE,breaks="Sturges",...)
 {
@@ -86,8 +86,9 @@ plot.moveData <- function(x,animals=NULL,compact=FALSE,ask=TRUE,breaks="Sturges"
             hist(step,xlab="step length",main="",col="grey",border="white",breaks=breaks)
             mtext(paste("Animal ID:",ID),side=3,outer=TRUE,padj=2)
         }
-    } else # step length and turning angle are provided
-    {
+    } else {
+        # step length and turning angle are provided
+
         if(compact) {
             ################################
             ## Map of all animals' tracks ##
@@ -111,19 +112,21 @@ plot.moveData <- function(x,animals=NULL,compact=FALSE,ask=TRUE,breaks="Sturges"
                 xmin <- xmid-(ymax-ymin)/2
             }
 
-            if(length(animalsInd)>7) # to make sure that all colors are distinct
-                colors <- rainbow(length(animalsInd))
-            else # color-blind friendly palette
+            if(length(animalsInd)>7) {
+                # to make sure that all colours are distinct (emulate ggplot default palette)
+                hues <- seq(15, 375, length = length(animalsInd) + 1)
+                colors <- hcl(h = hues, l = 65, c = 100)[1:length(animalsInd)]
+            } else # color-blind friendly palette
                 colors <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
             ID <- unique(data$ID)[animalsInd[1]]
             x <- data$x[which(data$ID==ID)]
             y <- data$y[which(data$ID==ID)]
-            # plot the first animal's track
+            # plot the first track
             plot(x,y,type="o",pch=20,lwd=1.3,col=colors[1], cex=0.5,
                  xlim=c(xmin,xmax),ylim=c(ymin,ymax),xlab="x",ylab="y")
 
-            # add each other animal's track to the map
+            # add other tracks
             for(zoo in animalsInd[-1]) {
                 ID <- unique(data$ID)[zoo]
                 x <- data$x[which(data$ID==ID)]
@@ -146,8 +149,7 @@ plot.moveData <- function(x,animals=NULL,compact=FALSE,ask=TRUE,breaks="Sturges"
                 par(mfrow=c(1,1))
 
                 # map of the animal's track
-                plot(x,y,type="o",lwd=1.3,xlab="x",ylab="y",pch=20,
-                     asp=1)
+                plot(x,y,type="o",lwd=1.3,xlab="x",ylab="y",pch=20,cex=0.5,asp=1)
 
                 mtext(paste("Animal ID:",ID),side=3,outer=TRUE,padj=2)
             }
