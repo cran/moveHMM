@@ -103,11 +103,11 @@ m
 CI(m)
 
 ## ----plot_moveHMM,size='small',eval=FALSE--------------------------------
-#  plot(m)
+#  plot(m, plotCI=TRUE)
 
 ## ----plot_moveHMM2,echo=FALSE,results='hide'-----------------------------
 pdf(file="plot_moveHMM.pdf")
-plot(m,ask=FALSE)
+plot(m,ask=FALSE,plotCI=TRUE)
 dev.off()
 
 ## ----states,size='small',cache=TRUE--------------------------------------
@@ -123,6 +123,9 @@ head(sp)
 
 ## ----plotStates2, fig.width='4in', fig.height='4in', out.width='4in', out.height='4in', fig.pos='ht', fig.align='center', fig.cap="Decoded states sequence (top row), and state probabilities of observations (middle and bottom rows) for elk-115", cache=TRUE, echo=FALSE, results='hide'----
 plotStates(m,animals="elk-115",ask=FALSE)
+
+## ----plotStationary, fig.width='4in', fig.height='4in', out.width='4in', out.height='4in', fig.pos='htbp', fig.align='center', fig.cap='Output of \\texttt{plotStationary}. Stationary state probabilities, as functions of the distance to water, with 95\\% confidence intervals.'----
+plotStationary(m, plotCI=TRUE)
 
 ## ----AIC,size='small',eval=FALSE-----------------------------------------
 #  # initial parameters

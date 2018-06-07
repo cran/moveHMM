@@ -90,13 +90,15 @@ pseudoRes <- function(m)
             angleArgs <- list(angleFun,-pi,data$angle[1]) # to pass to function "integrate" below
             for(k in 1:nrow(m$mle$anglePar))
                 angleArgs[[k+3]] <- m$mle$anglePar[k,state]
+        }
 
-            for(i in 1:nbObs) {
-                if(!is.na(data$step[i])) {
-                    stepArgs[[1]] <- data$step[i]
-                    pStepMat[i,state] <- zeromass+(1-zeromass)*do.call(stepFun,stepArgs)
-                }
+        for(i in 1:nbObs) {
+            if(!is.na(data$step[i])) {
+                stepArgs[[1]] <- data$step[i]
+                pStepMat[i,state] <- zeromass+(1-zeromass)*do.call(stepFun,stepArgs)
+            }
 
+            if(angleDist!="none") {
                 if(!is.na(data$angle[i])) {
                     # angle==pi => residual=Inf
                     if(data$angle[i]!=pi) {
@@ -106,14 +108,6 @@ pseudoRes <- function(m)
                 }
             }
         }
-    }
-
-    if(!is.na(data$step[1]))
-        stepRes[1] <- qnorm(t(m$mle$delta)%*%pStepMat[1,])
-
-    if(angleDist!="none") {
-        if(!is.na(data$angle[1]))
-            angleRes[1] <- qnorm(t(m$mle$delta)%*%pAngleMat[1,])
     }
 
     # define covariates
@@ -126,17 +120,32 @@ pseudoRes <- function(m)
     else
         trMat <- array(1,dim=c(1,1,nbObs))
 
-    for(i in 2:nbObs) {
-        gamma <- trMat[,,i]
-        c <- max(la[i-1,]) # cancels below ; prevents numerical errors
-        a <- exp(la[i-1,]-c)
+    aInd <- NULL
+    for(i in 1:length(unique(m$data$ID)))
+        aInd <- c(aInd,which(m$data$ID==unique(m$data$ID)[i])[1])
 
-        if(!is.na(data$step[i]))
-            stepRes[i] <-qnorm(t(a)%*%(gamma/sum(a))%*%pStepMat[i,])
+    for(i in 1:nbObs) {
+        if(!is.na(data$step[i])){
+            if(any(i==aInd)){
 
-        if(angleDist!="none") {
-            if(!is.na(data$angle[i]))
-                angleRes[i] <- qnorm(t(a)%*%(gamma/sum(a))%*%pAngleMat[i,])
+                stepRes[i] <- qnorm(t(m$mle$delta)%*%pStepMat[i,])
+
+                if(angleDist!="none") {
+                    if(!is.na(data$angle[i]))
+                        angleRes[i] <- qnorm(t(m$mle$delta)%*%pAngleMat[i,])
+                }
+            } else {
+                gamma <- trMat[,,i]
+                c <- max(la[i-1,]) # cancels below ; prevents numerical errors
+                a <- exp(la[i-1,]-c)
+
+                stepRes[i] <-qnorm(t(a)%*%(gamma/sum(a))%*%pStepMat[i,])
+
+                if(angleDist!="none") {
+                    if(!is.na(data$angle[i]))
+                        angleRes[i] <- qnorm(t(a)%*%(gamma/sum(a))%*%pAngleMat[i,])
+                }
+            }
         }
     }
 
