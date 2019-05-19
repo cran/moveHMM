@@ -95,12 +95,23 @@ load("models.RData")
 ## ----print_moveHMM,size='small'------------------------------------------
 m
 
+## ----nlm-error, eval = FALSE, highlight = FALSE--------------------------
+#    Error in nlm(nLogLike, wpar, nbStates, bounds, parSize, data, stepDist,  :
+#    non-finite value supplied by 'nlm'
+
 ## ----normalize,size='small',eval=FALSE-----------------------------------
 #  data$dist_water <-
 #      (data$dist_water-mean(data$dist_water))/sd(data$dist_water)
 
 ## ----conf,size='small',warning=FALSE-------------------------------------
 CI(m)
+
+## ----ci-warn, eval = FALSE, highlight = FALSE----------------------------
+#    Warning message:
+#    In CI(m) :
+#    Some of the parameter estimates seem to lie close to
+#    the boundaries of their parameter space. The associated
+#    CIs are probably unreliable (or might not be computable).
 
 ## ----plot_moveHMM,size='small',eval=FALSE--------------------------------
 #  plot(m, plotCI=TRUE)
