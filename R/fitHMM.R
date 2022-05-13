@@ -47,20 +47,24 @@
 #' input. This option can be used to assess the initial parameters. Default: \code{TRUE}.
 #'
 #' @return A \code{moveHMM} object, i.e. a list of:
-#' \item{mle}{The maximum likelihood estimates of the parameters of the model (if the numerical algorithm
-#' has indeed identified the global maximum of the likelihood function), which is a list
-#' of: \code{stepPar} (step distribution parameters), \code{anglePar} (angle distribution
-#' parameters), \code{beta} (transition probabilities regression coefficients - more information
-#' in "Details"), and \code{delta} (initial distribution).}
+#' \item{mle}{The maximum likelihood estimates of the parameters of the model
+#' (if the numerical algorithm has indeed identified the global maximum of the
+#' likelihood function), which is a list of: \code{stepPar} (step distribution
+#' parameters), \code{anglePar} (angle distribution parameters), \code{beta}
+#' (transition probabilities regression coefficients - more information in
+#' "Details"), and \code{delta} (initial distribution).}
 #' \item{data}{The movement data}
-#' \item{stepDist}{The step length distribution name}
-#' \item{angleDist}{The turning angle distribution name}
 #' \item{mod}{The object returned by the numerical optimizer \code{nlm}}
-#' \item{conditions}{A few conditions used to fit the model (\code{zeroInflation}, \code{estAngleMean},
+#' \item{conditions}{A few conditions used to fit the model (\code{stepDist},
+#' \code{angleDist}, \code{zeroInflation}, \code{estAngleMean},
 #' \code{stationary}, and \code{formula})}
-#' \item{rawCovs}{Raw covariate values, as found in the data (if any). Used in \code{\link{plot.moveHMM}}.}
-#' \item{knownStates}{Vector of states known a priori, as provided in input (if any, \code{NULL} otherwise).
-#' Used in \code{\link{viterbi}},\code{\link{logAlpha}}, and \code{\link{logBeta}}}.
+#' \item{rawCovs}{Raw covariate values, as found in the data (if any). Used in
+#' \code{\link{plot.moveHMM}}.}
+#' \item{knownStates}{Vector of states known a priori, as provided in input (if
+#' any, \code{NULL} otherwise).
+#' Used in \code{\link{viterbi}},\code{\link{logAlpha}}, and
+#' \code{\link{logBeta}}}
+#' \item{nlmTime}{Computing time for optimisation, obtained with \link{system.time}}
 #'
 #' @details
 #' \itemize{
@@ -321,17 +325,20 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0=NULL,beta0=NULL,delta0=NULL,
         iterlim <- ifelse(is.null(nlmPar$iterlim),1000,nlmPar$iterlim)
 
         # call to optimizer nlm
-        withCallingHandlers(mod <- nlm(nLogLike,wpar,nbStates,bounds,parSize,data,stepDist,
-                                       angleDist,angleMean,zeroInflation,stationary,knownStates,
-                                       print.level=verbose,gradtol=gradtol,
-                                       stepmax=stepmax,steptol=steptol,
-                                       iterlim=iterlim,hessian=TRUE),
-                            warning=h) # filter warnings using function h
+        systime <- system.time(
+            withCallingHandlers(
+                mod <- nlm(nLogLike,wpar,nbStates,bounds,parSize,data,stepDist,
+                           angleDist,angleMean,zeroInflation,stationary,knownStates,
+                           print.level=verbose,gradtol=gradtol,
+                           stepmax=stepmax,steptol=steptol,
+                           iterlim=iterlim,hessian=TRUE),
+                warning=h)) # filter warnings using function h
 
         # convert the parameters back to their natural scale
         mle <- w2n(mod$estimate,bounds,parSize,nbStates,nbCovs,estAngleMean,stationary)
     }
     else {
+        systime <- 0
         mod <- NA
         mle <- w2n(wpar,bounds,parSize,nbStates,nbCovs,estAngleMean,stationary)
     }
@@ -396,11 +403,13 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0=NULL,beta0=NULL,delta0=NULL,
     conditions <- list(stepDist=stepDist,angleDist=angleDist,zeroInflation=zeroInflation,
                        estAngleMean=estAngleMean,stationary=stationary,formula=formula)
 
-    mh <- list(data=data,mle=mle,mod=mod,conditions=conditions,rawCovs=rawCovs,knownStates=knownStates)
+    mh <- list(data = data, mle = mle, mod = mod, conditions = conditions,
+               rawCovs = rawCovs, knownStates = knownStates,
+               nlmTime = systime)
     return(moveHMM(mh))
 }
 
-# Roxygen documentation for the data file "data/elk_data.RData"
+# Roxygen documentation for the data files in ./data/
 
 #' Elk data set from Morales et al. (2004, Ecology)
 #'
@@ -414,5 +423,22 @@ fitHMM <- function(data,nbStates,stepPar0,anglePar0=NULL,beta0=NULL,delta0=NULL,
 #'
 #' @name elk_data
 #' @usage elk_data
+#' @docType data
+NULL
+
+#' Wild haggis data set from Michelot et al. (2016, Methods Eco Evol)
+#'
+#' Data frame of the first three tracks from Michelot et al. (2016),
+#'  with columns:
+#' \itemize{
+#' \item \code{ID} Track identifier
+#' \item \code{x} Easting coordinate of locations
+#' \item \code{y} Northing coordinate of locations
+#' \item \code{slope} Terrain slope (in degrees)
+#' \item \code{temp} Air temperature (in degrees Celsius)
+#' }
+#'
+#' @name haggis_data
+#' @usage haggis_data
 #' @docType data
 NULL

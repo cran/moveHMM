@@ -1,4 +1,4 @@
-## ----init, echo=FALSE, message=FALSE-------------------------------------
+## ----init, echo=FALSE, message=FALSE------------------------------------------
 library(MASS)
 library(boot)
 library(CircStats)
@@ -6,34 +6,34 @@ library(sp)
 library(Rcpp)
 library(moveHMM)
 
-## ----trackData2,size='small'---------------------------------------------
+## ----trackData2,size='small'--------------------------------------------------
 head(elk_data)
 
-## ----trackData4,size='small'---------------------------------------------
+## ----trackData4,size='small'--------------------------------------------------
 elk_data$Easting <- elk_data$Easting/1000
 elk_data$Northing <- elk_data$Northing/1000
 
-## ----trackData5,size='small'---------------------------------------------
+## ----trackData5,size='small'--------------------------------------------------
 head(elk_data)
 
-## ----prepData,size='small'-----------------------------------------------
+## ----prepData,size='small'----------------------------------------------------
 data <- prepData(elk_data,type="UTM",coordNames=c("Easting","Northing"))
 
-## ----data,size='small'---------------------------------------------------
+## ----data,size='small'--------------------------------------------------------
 head(data)
 
-## ----summary,size='small'------------------------------------------------
+## ----summary,size='small'-----------------------------------------------------
 summary(data)
 
-## ----plot_moveData1,size='small',eval=FALSE------------------------------
+## ----plot_moveData1,size='small',eval=FALSE-----------------------------------
 #  plot(data,compact=T)
 
-## ----plot_moveData2,echo=FALSE,results='hide'----------------------------
+## ----plot_moveData2,echo=FALSE,results='hide'---------------------------------
 pdf(file="plot_moveData.pdf")
 plot(data,compact=T,ask=FALSE)
 dev.off()
 
-## ----fitHMM,size='small',eval=FALSE--------------------------------------
+## ----fitHMM,size='small',eval=FALSE-------------------------------------------
 #  ## standardize covariate values
 #  data$dist_water <-
 #      (data$dist_water-mean(data$dist_water))/sd(data$dist_water)
@@ -51,7 +51,7 @@ dev.off()
 #  m <- fitHMM(data=data,nbStates=2,stepPar0=stepPar0,
 #              anglePar0=anglePar0,formula=~dist_water)
 
-## ----savemodels,echo=FALSE,eval=FALSE------------------------------------
+## ----savemodels,echo=FALSE,eval=FALSE-----------------------------------------
 #  ## code to fit and save the 2 and 3-state models loaded below
 #  library(moveHMM)
 #  trackData <- read.table("http://www.esapubs.org/archive/ecol/E085/072/elk_data.txt",
@@ -89,47 +89,47 @@ dev.off()
 #  
 #  save(m,m3,file="models.RData")
 
-## ----fitHMM2,echo=FALSE,cache=TRUE---------------------------------------
+## ----fitHMM2,echo=FALSE,cache=TRUE--------------------------------------------
 load("models.RData")
 
-## ----print_moveHMM,size='small'------------------------------------------
+## ----print_moveHMM,size='small'-----------------------------------------------
 m
 
-## ----nlm-error, eval = FALSE, highlight = FALSE--------------------------
+## ----nlm-error, eval = FALSE, highlight = FALSE-------------------------------
 #    Error in nlm(nLogLike, wpar, nbStates, bounds, parSize, data, stepDist,  :
 #    non-finite value supplied by 'nlm'
 
-## ----normalize,size='small',eval=FALSE-----------------------------------
+## ----normalize,size='small',eval=FALSE----------------------------------------
 #  data$dist_water <-
 #      (data$dist_water-mean(data$dist_water))/sd(data$dist_water)
 
-## ----conf,size='small',warning=FALSE-------------------------------------
+## ----conf,size='small',warning=FALSE------------------------------------------
 CI(m)
 
-## ----ci-warn, eval = FALSE, highlight = FALSE----------------------------
+## ----ci-warn, eval = FALSE, highlight = FALSE---------------------------------
 #    Warning message:
 #    In CI(m) :
 #    Some of the parameter estimates seem to lie close to
 #    the boundaries of their parameter space. The associated
 #    CIs are probably unreliable (or might not be computable).
 
-## ----plot_moveHMM,size='small',eval=FALSE--------------------------------
+## ----plot_moveHMM,size='small',eval=FALSE-------------------------------------
 #  plot(m, plotCI=TRUE)
 
-## ----plot_moveHMM2,echo=FALSE,results='hide'-----------------------------
+## ----plot_moveHMM2,echo=FALSE,results='hide'----------------------------------
 pdf(file="plot_moveHMM.pdf")
 plot(m,ask=FALSE,plotCI=TRUE)
 dev.off()
 
-## ----states,size='small',cache=TRUE--------------------------------------
+## ----states,size='small',cache=TRUE-------------------------------------------
 states <- viterbi(m)
 states[1:25]
 
-## ----stateProbs,size='small',cache=TRUE----------------------------------
+## ----stateProbs,size='small',cache=TRUE---------------------------------------
 sp <- stateProbs(m)
 head(sp)
 
-## ----plotStates,size='small',eval=FALSE----------------------------------
+## ----plotStates,size='small',eval=FALSE---------------------------------------
 #  plotStates(m,animals="elk-115")
 
 ## ----plotStates2, fig.width='4in', fig.height='4in', out.width='4in', out.height='4in', fig.pos='ht', fig.align='center', fig.cap="Decoded states sequence (top row), and state probabilities of observations (middle and bottom rows) for elk-115", cache=TRUE, echo=FALSE, results='hide'----
@@ -138,7 +138,7 @@ plotStates(m,animals="elk-115",ask=FALSE)
 ## ----plotStationary, fig.width='4in', fig.height='4in', out.width='4in', out.height='4in', fig.pos='htbp', fig.align='center', fig.cap='Output of \\texttt{plotStationary}. Stationary state probabilities, as functions of the distance to water, with 95\\% confidence intervals.'----
 plotStationary(m, plotCI=TRUE)
 
-## ----AIC,size='small',eval=FALSE-----------------------------------------
+## ----AIC,size='small',eval=FALSE----------------------------------------------
 #  # initial parameters
 #  mu0 <- c(0.1,0.5,3)
 #  sigma0 <- c(0.05,0.5,1)
@@ -152,10 +152,10 @@ plotStationary(m, plotCI=TRUE)
 #  m3 <- fitHMM(data=data,nbStates=3,stepPar0=stepPar0,
 #               anglePar0=anglePar0,formula=~dist_water)
 
-## ----AIC2,size='small'---------------------------------------------------
+## ----AIC2,size='small'--------------------------------------------------------
 AIC(m,m3)
 
-## ----pseudoRes,size='small',eval=FALSE-----------------------------------
+## ----pseudoRes,size='small',eval=FALSE----------------------------------------
 #  # compute the pseudo-residuals
 #  pr <- pseudoRes(m)
 #  
@@ -164,15 +164,4 @@ AIC(m,m3)
 
 ## ----plotPR, fig.width='4in', fig.height='5in', out.width='4in', out.height='5in', fig.pos='ht!', fig.align='center', fig.cap="Time series, qq-plots, and autocorrelation functions of the pseudo-residuals of the 2-state model.", cache=TRUE, echo=FALSE, results='hide', message=FALSE----
 plotPR(m)
-
-## ----plotSat1, size='small', eval=FALSE----------------------------------
-#  library(rgdal)
-#  utmcoord <- SpatialPoints(cbind(data$x*1000,data$y*1000),
-#                            proj4string=CRS("+proj=utm +zone=17"))
-#  llcoord <- spTransform(utmcoord,CRS("+proj=longlat"))
-#  lldata <- data.frame(ID=data$ID,x=attr(llcoord,"coords")[,1],
-#                       y=attr(llcoord,"coords")[,2])
-
-## ----plotSat2, eval=FALSE------------------------------------------------
-#  plotSat(lldata,zoom=8)
 

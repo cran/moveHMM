@@ -4,8 +4,16 @@
 \alias{allProbs}
 \title{Matrix of all probabilities}
 \usage{
-allProbs(data, nbStates, stepDist, angleDist, stepPar, anglePar = NULL,
-  zeroInflation = FALSE, knownStates = NULL)
+allProbs(
+  data,
+  nbStates,
+  stepDist,
+  angleDist,
+  stepPar,
+  anglePar = NULL,
+  zeroInflation = FALSE,
+  knownStates = NULL
+)
 }
 \arguments{
 \item{data}{Object \code{moveData}.}
@@ -53,3 +61,4 @@ P <- allProbs(data=data,nbStates=2,stepDist=stepDist,angleDist=angleDist,
                byrow=TRUE),zeroInflation=TRUE)
 }
 }
+\keyword{internal}

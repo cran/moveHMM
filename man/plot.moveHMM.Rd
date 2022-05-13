@@ -4,10 +4,17 @@
 \alias{plot.moveHMM}
 \title{Plot \code{moveHMM}}
 \usage{
-\method{plot}{moveHMM}(x, animals = NULL, ask = TRUE,
-  breaks = "Sturges", hist.ylim = NULL, sepAnimals = FALSE,
-  sepStates = FALSE, col = NULL, cumul = TRUE, plotTracks = TRUE,
-  plotCI = FALSE, alpha = 0.95, ...)
+\method{plot}{moveHMM}(
+  x,
+  animals = NULL,
+  ask = TRUE,
+  breaks = "Sturges",
+  col = NULL,
+  plotTracks = TRUE,
+  plotCI = FALSE,
+  alpha = 0.95,
+  ...
+)
 }
 \arguments{
 \item{x}{Object \code{moveHMM}}
@@ -17,20 +24,10 @@ Default: \code{NULL}; all animals are plotted.}
 
 \item{ask}{If \code{TRUE}, the execution pauses between each plot.}
 
-\item{breaks}{Histogram parameter. See \code{hist} documentation.}
-
-\item{hist.ylim}{Parameter \code{ylim} for the step length histograms.
+\item{breaks}{Histogram parameter. See \code{hist} documentation.
 See \code{hist} documentation. Default: \code{NULL} ; the function sets default values.}
 
-\item{sepAnimals}{If \code{TRUE}, the data is split by individuals in the histograms.
-Default: \code{FALSE}.}
-
-\item{sepStates}{If \code{TRUE}, the data is split by states in the histograms.
-Default: \code{FALSE}.}
-
 \item{col}{Vector or colors for the states (one color per state).}
-
-\item{cumul}{If \code{TRUE}, the sum of weighted densities is plotted (default).}
 
 \item{plotTracks}{If \code{TRUE}, the Viterbi-decoded tracks are plotted (default).}
 
@@ -58,6 +55,5 @@ weighted by a factor 1/3, and in the second state by a factor 2/3.
 m <- example$m
 
 plot(m,ask=TRUE,animals=1,breaks=20)
-
 
 }

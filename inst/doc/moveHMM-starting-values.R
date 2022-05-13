@@ -294,7 +294,7 @@ points(steps2[nrow(steps2),1], steps2[nrow(steps2),2], pch = "+",
 legend("topleft", legend = c("Starting value", "Estimate"),
        col = c("seagreen", "royalblue"), pch = "+", bty = "n", pt.cex = 2)
 
-## ----readdat, cache = TRUE, results = 'hide', message = FALSE------------
+## ----readdat, cache = TRUE, results = 'hide', message = FALSE-----------------
 # Load package
 library(moveHMM)
 
@@ -319,13 +319,13 @@ head(hmmdata)
 # Plot histogram of step lengths
 hist(hmmdata$step)
 
-## ----steppar-------------------------------------------------------------
+## ----steppar------------------------------------------------------------------
 # Starting values for the step length parameters
 stepMean0 <- c(0.1, 0.7) # initial means (one for each state)
 stepSD0 <- c(0.1, 0.7) # initial standard deviations (one for each state)
 stepPar0 <- c(stepMean0, stepSD0)
 
-## ----zeromass------------------------------------------------------------
+## ----zeromass-----------------------------------------------------------------
 # Indices of steps of length zero
 whichzero <- which(hmmdata$step == 0)
 
@@ -362,16 +362,16 @@ axis(side = 1, at = c(-pi, -pi/2, 0, pi/2, pi),
 legend("topleft", legend = kappas, col = cols, lty = 1,
        title = expression(kappa), bty = "n")
 
-## ----anglepar------------------------------------------------------------
+## ----anglepar-----------------------------------------------------------------
 # Starting values for the turning angle parameters
 angleMean0 <- c(0, 0) # initial means (one for each state)
 angleCon0 <- c(0.5, 3) # initial concentrations (one for each state)
 anglePar0 <- c(angleMean0, angleCon0)
 
-## ----fithmm--------------------------------------------------------------
+## ----fithmm-------------------------------------------------------------------
 m <- fitHMM(data = hmmdata, nbStates = 2, stepPar0 = stepPar0, anglePar0 = anglePar0)
 
-## ----random--------------------------------------------------------------
+## ----random-------------------------------------------------------------------
 # For reproducibility
 set.seed(12345)
 
@@ -386,20 +386,20 @@ for(i in 1:niter) {
     stepMean0 <- runif(2,
                        min = c(0.05, 0.3),
                        max = c(0.3, 1))
-    
+
     # Step length standard deviation
     stepSD0 <- runif(2,
                      min = c(0.05, 0.3),
                      max = c(0.3, 1))
-    
+
     # Turning angle mean
     angleMean0 <- c(0, 0)
-    
+
     # Turning angle concentration
     angleCon0 <- runif(2,
                        min = c(0.1, 1),
                        max = c(1, 5))
-    
+
     # Fit model
     stepPar0 <- c(stepMean0, stepSD0)
     anglePar0 <- c(angleMean0, angleCon0)
@@ -407,12 +407,12 @@ for(i in 1:niter) {
                         anglePar0 = anglePar0)
 }
 
-## ----allnllk-------------------------------------------------------------
+## ----allnllk------------------------------------------------------------------
 # Extract likelihoods of fitted models
 allnllk <- unlist(lapply(allm, function(m) m$mod$minimum))
 allnllk
 
-## ----mbest---------------------------------------------------------------
+## ----mbest--------------------------------------------------------------------
 # Index of best fitting model (smallest negative log-likelihood)
 whichbest <- which.min(allnllk)
 
@@ -420,7 +420,7 @@ whichbest <- which.min(allnllk)
 mbest <- allm[[whichbest]]
 mbest
 
-## ----parallel, eval = FALSE----------------------------------------------
+## ----parallel, eval = FALSE---------------------------------------------------
 #  # Package for parallel computations
 #  library(parallel)
 #  

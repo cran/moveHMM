@@ -4,15 +4,20 @@
 \alias{prepData}
 \title{Preprocessing of the tracking data}
 \usage{
-prepData(trackData, type = c("LL", "UTM"), coordNames = c("x", "y"),
-  LLangle = NULL)
+prepData(
+  trackData,
+  type = c("LL", "UTM"),
+  coordNames = c("x", "y"),
+  LLangle = NULL
+)
 }
 \arguments{
 \item{trackData}{A dataframe of the tracking data, including at least coordinates
 (either longitude/latitude values or cartesian coordinates), and optionnaly a field \code{ID}
 (identifiers for the observed individuals). Additionnal fields are considered as covariates.
 Note that, if the names of the coordinates are not "x" and "y", the \code{coordNames} argument
-should specified.}
+should specified. Tracking data should be structured so that the rows for each track (or each animal)
+are grouped together, and ordered by date, in the data frame.}
 
 \item{type}{\code{'LL'} if longitude/latitude provided (default), \code{'UTM'} if easting/northing.}
 

@@ -5,6 +5,7 @@
 #' using the Viterbi algorithm.
 #'
 #' @param m An object \code{moveHMM}
+#' @param newdata An object \code{moveData} (optional)
 #'
 #' @return The sequence of most probable states.
 #'
@@ -22,12 +23,14 @@
 #'
 #' @export
 
-viterbi <- function(m)
+viterbi <- function(m, newdata = NULL)
 {
     if(!is.moveHMM(m))
         stop("'m' must be a moveHMM object (as output by fitHMM)")
+    if(!is.null(newdata) && !is.moveData(newdata))
+        stop("'newdata' must be a moveData object (as output by prepData) or NULL")
 
-    data <- m$data
+    data <- if (!is.null(newdata)) newdata else m$data
     nbStates <- ncol(m$mle$stepPar)
     beta <- m$mle$beta
     delta <- m$mle$delta
@@ -51,9 +54,8 @@ viterbi <- function(m)
     trMat <- trMatrix_rcpp(nbStates,beta,as.matrix(covs))
 
     nbAnimals <- length(unique(data$ID))
-    aInd <- NULL
-    for(i in 1:nbAnimals)
-        aInd <- c(aInd,which(data$ID==unique(data$ID)[i])[1])
+    # aInd = list of indices of first observation for each animal
+    aInd <- c(1, which(data$ID[-1] != data$ID[-nrow(data)]) + 1)
 
     allStates <- NULL
     for(zoo in 1:nbAnimals) {

@@ -5,7 +5,8 @@
 #' (either longitude/latitude values or cartesian coordinates), and optionnaly a field \code{ID}
 #' (identifiers for the observed individuals). Additionnal fields are considered as covariates.
 #' Note that, if the names of the coordinates are not "x" and "y", the \code{coordNames} argument
-#' should specified.
+#' should specified. Tracking data should be structured so that the rows for each track (or each animal)
+#' are grouped together, and ordered by date, in the data frame.
 #' @param type \code{'LL'} if longitude/latitude provided (default), \code{'UTM'} if easting/northing.
 #' @param coordNames Names of the columns of coordinates in the data frame. Default: \code{c("x","y")}.
 #' @param LLangle Logical. If TRUE, the turning angle is calculated with \code{geosphere::bearing}
@@ -36,7 +37,7 @@ prepData <- function(trackData, type=c('LL','UTM'), coordNames=c("x","y"), LLang
     if(length(which(coordNames %in% names(trackData)))<2)
         stop("Check the columns names of your coordinates.")
 
-    if(!is.null(trackData$ID))
+    if("ID" %in% colnames(trackData))
         ID <- as.character(trackData$ID) # homogenization of numeric and string IDs
     else
         ID <- rep("Animal1",nrow(trackData)) # default ID if none provided
@@ -63,8 +64,8 @@ prepData <- function(trackData, type=c('LL','UTM'), coordNames=c("x","y"), LLang
         }
     }
 
-    x <- trackData[,coordNames[1]]
-    y <- trackData[,coordNames[2]]
+    x <- trackData[[coordNames[1]]]
+    y <- trackData[[coordNames[2]]]
 
     nbAnimals <- length(unique(ID))
 
@@ -72,7 +73,7 @@ prepData <- function(trackData, type=c('LL','UTM'), coordNames=c("x","y"), LLang
     for(i in 1:nbAnimals) {
         ind <- which(ID==unique(ID)[i])
         if(length(ind)!=length(ind[1]:ind[length(ind)]))
-            stop("Each animal's obervations must be contiguous.")
+            stop("Each animal's observations must be contiguous.")
     }
 
     for(zoo in 1:nbAnimals) {

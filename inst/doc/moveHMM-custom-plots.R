@@ -1,4 +1,4 @@
-## ----init, message=FALSE-------------------------------------------------
+## ----init, message=FALSE------------------------------------------------------
 set.seed(1)
 library(moveHMM)
 
@@ -15,7 +15,7 @@ nstate <- 2
 m <- fitHMM(data, nbStates = nstate, stepPar0 = c(200, 1000, 200, 1000, 0.01, 0.01),
             anglePar0 = c(pi, 0, 1, 1), formula = ~ dist_water * temp)
 
-## ----extract-pars--------------------------------------------------------
+## ----extract-pars-------------------------------------------------------------
 # Estimated step length parameters
 stepMean <- m$mle$stepPar["mean",]
 stepSD <- m$mle$stepPar["sd",]
@@ -24,11 +24,11 @@ stepSD <- m$mle$stepPar["sd",]
 angleMean <- m$mle$anglePar["mean",]
 angleCon <- m$mle$anglePar["concentration",]
 
-## ----rate-shape----------------------------------------------------------
+## ----rate-shape---------------------------------------------------------------
 stepShape <- stepMean^2/stepSD^2
 stepRate <- stepMean/stepSD^2
 
-## ----states--------------------------------------------------------------
+## ----states-------------------------------------------------------------------
 # Most likely state sequence
 states <- viterbi(m)
 
@@ -78,10 +78,10 @@ for(s in 1:nstate) {
            col = mycols[s], type = "l")
 }
 
-## ----extract-beta--------------------------------------------------------
+## ----extract-beta-------------------------------------------------------------
 beta <- m$mle$beta
 
-## ----design-mat----------------------------------------------------------
+## ----design-mat---------------------------------------------------------------
 # Distance values at which the transition probabilities should be plotted
 dist_water_grid <- seq(0, max(data$dist_water), length = 1000)
 
@@ -100,7 +100,7 @@ newcovs2 <- cbind("intercept" = 1,
                   "temp" = temp_fixed[2],
                   "dist_water:temp" = dist_water_grid * temp_fixed[2])
 
-## ----trMatrix------------------------------------------------------------
+## ----trMatrix-----------------------------------------------------------------
 # Transition probability matrices for temp = 10
 tpm1 <- moveHMM:::trMatrix_rcpp(nbStates = nstate,
                                 beta = beta, covs = newcovs1)
@@ -109,7 +109,7 @@ tpm1 <- moveHMM:::trMatrix_rcpp(nbStates = nstate,
 tpm2 <- moveHMM:::trMatrix_rcpp(nbStates = nstate,
                                 beta = beta, covs = newcovs2)
 
-## ----trMatrix2-----------------------------------------------------------
+## ----trMatrix2----------------------------------------------------------------
 tpm1[,,1:3]
 
 ## ----tpm, out.width='.49\\linewidth', fig.width=6, fig.height=6, fig.show='hold'----
