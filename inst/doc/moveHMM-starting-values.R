@@ -298,31 +298,20 @@ legend("topleft", legend = c("Starting value", "Estimate"),
 # Load package
 library(moveHMM)
 
-# Read data from URL
-URL <- paste0("https://www.datarepository.movebank.org/bitstream/handle/",
-              "10255/move.373/Elliptical%20Time-Density%20Model%20%28Wall%",
-              "20et%20al.%202014%29%20African%20Elephant%20Dataset%20%",
-              "28Source-Save%20the%20Elephants%29.csv")
-rawdata <- read.csv(url(URL))
-
-# Select and rename relevant columns (only keep 1000 rows for speed)
-eleph_data <- rawdata[1:1000, c(11, 4, 5)]
-colnames(eleph_data) <- c("ID", "x", "y")
-
 # Derive step lengths and turning angles
-hmmdata <- prepData(eleph_data)
+hmmdata <- prepData(haggis_data, type = "UTM")
 
 # Display first rows of data set
 head(hmmdata)
 
 ## ----stephist2, out.width='.6\\linewidth', fig.width=6, fig.height=5, fig.align="center"----
 # Plot histogram of step lengths
-hist(hmmdata$step)
+hist(hmmdata$step, xlab = "step length", main = "")
 
 ## ----steppar------------------------------------------------------------------
 # Starting values for the step length parameters
-stepMean0 <- c(0.1, 0.7) # initial means (one for each state)
-stepSD0 <- c(0.1, 0.7) # initial standard deviations (one for each state)
+stepMean0 <- c(1, 5) # initial means (one for each state)
+stepSD0 <- c(1, 5) # initial standard deviations (one for each state)
 stepPar0 <- c(stepMean0, stepSD0)
 
 ## ----zeromass-----------------------------------------------------------------
@@ -334,7 +323,7 @@ length(whichzero)/nrow(hmmdata)
 
 ## ----anglehist2, out.width='.6\\linewidth', fig.width=6, fig.height=5, fig.align="center"----
 # Plot histogram of turning angles
-hist(hmmdata$angle, breaks = seq(-pi, pi, length = 15))
+hist(hmmdata$angle, breaks = seq(-pi, pi, length = 15), xlab = "angle", main = "")
 
 ## ----vonmises, echo = FALSE, message = FALSE, out.width='.6\\linewidth', fig.width=6, fig.height=5, fig.align="center"----
 # Load package for von Mises distribution
@@ -364,8 +353,8 @@ legend("topleft", legend = kappas, col = cols, lty = 1,
 
 ## ----anglepar-----------------------------------------------------------------
 # Starting values for the turning angle parameters
-angleMean0 <- c(0, 0) # initial means (one for each state)
-angleCon0 <- c(0.5, 3) # initial concentrations (one for each state)
+angleMean0 <- c(pi, 0) # initial means (one for each state)
+angleCon0 <- c(1, 10) # initial concentrations (one for each state)
 anglePar0 <- c(angleMean0, angleCon0)
 
 ## ----fithmm-------------------------------------------------------------------
@@ -384,21 +373,21 @@ allm <- list()
 for(i in 1:niter) {
     # Step length mean
     stepMean0 <- runif(2,
-                       min = c(0.05, 0.3),
-                       max = c(0.3, 1))
+                       min = c(0.5, 3),
+                       max = c(2, 8))
 
     # Step length standard deviation
     stepSD0 <- runif(2,
-                     min = c(0.05, 0.3),
-                     max = c(0.3, 1))
+                     min = c(0.5, 3),
+                     max = c(2, 8))
 
     # Turning angle mean
     angleMean0 <- c(0, 0)
 
     # Turning angle concentration
     angleCon0 <- runif(2,
-                       min = c(0.1, 1),
-                       max = c(1, 5))
+                       min = c(0.5, 5),
+                       max = c(2, 15))
 
     # Fit model
     stepPar0 <- c(stepMean0, stepSD0)
@@ -437,21 +426,21 @@ mbest
 #  allPar0 <- lapply(as.list(1:niter), function(x) {
 #      # Step length mean
 #      stepMean0 <- runif(2,
-#                         min = c(0.05, 0.3),
-#                         max = c(0.3, 1))
+#                         min = c(0.5, 3),
+#                         max = c(2, 8))
 #  
 #      # Step length standard deviation
 #      stepSD0 <- runif(2,
-#                       min = c(0.05, 0.3),
-#                       max = c(0.3, 1))
+#                       min = c(0.5, 3),
+#                       max = c(2, 8))
 #  
 #      # Turning angle mean
 #      angleMean0 <- c(0, 0)
 #  
 #      # Turning angle concentration
 #      angleCon0 <- runif(2,
-#                         min = c(0.1, 1),
-#                         max = c(1, 5))
+#                         min = c(0.5, 5),
+#                         max = c(2, 15))
 #  
 #      # Return vectors of starting values
 #      stepPar0 <- c(stepMean0, stepSD0)
