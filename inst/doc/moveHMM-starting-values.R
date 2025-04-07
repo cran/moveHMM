@@ -410,51 +410,51 @@ mbest <- allm[[whichbest]]
 mbest
 
 ## ----parallel, eval = FALSE---------------------------------------------------
-#  # Package for parallel computations
-#  library(parallel)
-#  
-#  # Create cluster of size ncores
-#  ncores <- detectCores() - 1
-#  cl <- makeCluster(getOption("cl.cores", ncores))
-#  # Export objects needed in parallelised function to cluster
-#  clusterExport(cl, list("hmmdata", "fitHMM"))
-#  
-#  # Number of tries with different starting values
-#  niter <- 25
-#  
-#  # Create list of starting values
-#  allPar0 <- lapply(as.list(1:niter), function(x) {
-#      # Step length mean
-#      stepMean0 <- runif(2,
-#                         min = c(0.5, 3),
-#                         max = c(2, 8))
-#  
-#      # Step length standard deviation
-#      stepSD0 <- runif(2,
-#                       min = c(0.5, 3),
-#                       max = c(2, 8))
-#  
-#      # Turning angle mean
-#      angleMean0 <- c(0, 0)
-#  
-#      # Turning angle concentration
-#      angleCon0 <- runif(2,
-#                         min = c(0.5, 5),
-#                         max = c(2, 15))
-#  
-#      # Return vectors of starting values
-#      stepPar0 <- c(stepMean0, stepSD0)
-#      anglePar0 <- c(angleMean0, angleCon0)
-#      return(list(step = stepPar0, angle = anglePar0))
-#  })
-#  
-#  # Fit the niter models in parallel
-#  allm_parallel <- parLapply(cl = cl, X = allPar0, fun = function(par0) {
-#      m <- fitHMM(data = hmmdata, nbStates = 2, stepPar0 = par0$step,
-#                  anglePar0 = par0$angle)
-#      return(m)
-#  })
-#  
-#  # Then, we can extract the best-fitting model from allm_parallel
-#  # as before
+# # Package for parallel computations
+# library(parallel)
+# 
+# # Create cluster of size ncores
+# ncores <- detectCores() - 1
+# cl <- makeCluster(getOption("cl.cores", ncores))
+# # Export objects needed in parallelised function to cluster
+# clusterExport(cl, list("hmmdata", "fitHMM"))
+# 
+# # Number of tries with different starting values
+# niter <- 25
+# 
+# # Create list of starting values
+# allPar0 <- lapply(as.list(1:niter), function(x) {
+#     # Step length mean
+#     stepMean0 <- runif(2,
+#                        min = c(0.5, 3),
+#                        max = c(2, 8))
+# 
+#     # Step length standard deviation
+#     stepSD0 <- runif(2,
+#                      min = c(0.5, 3),
+#                      max = c(2, 8))
+# 
+#     # Turning angle mean
+#     angleMean0 <- c(0, 0)
+# 
+#     # Turning angle concentration
+#     angleCon0 <- runif(2,
+#                        min = c(0.5, 5),
+#                        max = c(2, 15))
+# 
+#     # Return vectors of starting values
+#     stepPar0 <- c(stepMean0, stepSD0)
+#     anglePar0 <- c(angleMean0, angleCon0)
+#     return(list(step = stepPar0, angle = anglePar0))
+# })
+# 
+# # Fit the niter models in parallel
+# allm_parallel <- parLapply(cl = cl, X = allPar0, fun = function(par0) {
+#     m <- fitHMM(data = hmmdata, nbStates = 2, stepPar0 = par0$step,
+#                 anglePar0 = par0$angle)
+#     return(m)
+# })
+# 
+# # Then, we can extract the best-fitting model from allm_parallel
+# # as before
 
