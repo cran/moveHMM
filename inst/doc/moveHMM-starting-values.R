@@ -326,9 +326,6 @@ length(whichzero)/nrow(hmmdata)
 hist(hmmdata$angle, breaks = seq(-pi, pi, length = 15), xlab = "angle", main = "")
 
 ## ----vonmises, echo = FALSE, message = FALSE, out.width='.6\\linewidth', fig.width=6, fig.height=5, fig.align="center"----
-# Load package for von Mises distribution
-library(CircStats)
-
 # Colours for line plots below
 cols <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")
 
@@ -339,12 +336,13 @@ anglegrid <- seq(-pi, pi, length = 1000)
 kappas <- c(0, 1, 2, 5, 10, 20)
 
 # Plot the six density functions
-plot(anglegrid, dvm(anglegrid, mu = 0, kappa = kappas[1]), type = "l",
-     col = cols[1], xlab = "Turning angle (radians)", ylab = "Density",
-     ylim = c(0, 2), xaxt = "n")
+plot(anglegrid, moveHMM:::dvm(anglegrid, mu = 0, kappa = kappas[1]),
+     type = "l", col = cols[1], ylim = c(0, 2), xaxt = "n",
+     xlab = "Turning angle (radians)", ylab = "Density")
 for(i in 2:length(kappas)) {
     kappa <- kappas[i]
-    points(anglegrid, dvm(anglegrid, mu = 0, kappa = kappa), type = "l", col = cols[i])
+    points(anglegrid, moveHMM:::dvm(anglegrid, mu = 0, kappa = kappa),
+           type = "l", col = cols[i])
 }
 axis(side = 1, at = c(-pi, -pi/2, 0, pi/2, pi),
      labels = expression(-pi, -pi/2, 0, pi/2, pi))
